@@ -10,9 +10,25 @@
     }
   ],
   "rewrites": [
-    { 
-      "source": "/(.*)", 
-      "destination": "src/index.js" 
+    {
+      "source": "/auth/:path*",
+      "destination": "src/index.js"
+    },
+    {
+      "source": "/bookmarks/:path*",
+      "destination": "src/index.js"
+    },
+    {
+      "source": "/folders/:path*",
+      "destination": "src/index.js"
+    },
+    {
+      "source": "/chat/:path*",
+      "destination": "src/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "src/index.js"
     }
   ]
 }

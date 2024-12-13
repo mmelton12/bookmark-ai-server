@@ -55,11 +55,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/bookmarks', bookmarkRoutes);
-app.use('/api/folders', folderRoutes);
-app.use('/api/chat', chatRoutes);
+// Mount routes without /api prefix
+app.use('/auth', authRoutes);
+app.use('/bookmarks', bookmarkRoutes);
+app.use('/folders', folderRoutes);
+app.use('/chat', chatRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
