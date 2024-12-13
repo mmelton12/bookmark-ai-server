@@ -12,7 +12,7 @@ router.get('/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-router.get('/google/callback',
+router.get('/google/callback/flowName=GeneralOAuthFlow',
     passport.authenticate('google', { session: false }),
     async (req, res) => {
         try {
@@ -32,7 +32,7 @@ router.get('/google/callback',
     }
 );
 
-// @route   POST /api/auth/signup
+// @route   POST /auth/signup
 // @desc    Register a new user
 // @access  Public
 router.post('/signup', [
@@ -100,7 +100,7 @@ router.post('/signup', [
     }
 });
 
-// @route   POST /api/auth/login
+// @route   POST /auth/login
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', [
@@ -160,7 +160,7 @@ router.post('/login', [
     }
 });
 
-// @route   POST /api/auth/logout
+// @route   POST /auth/logout
 // @desc    Logout user / Clear credentials
 // @access  Public
 router.post('/logout', (req, res) => {
@@ -168,7 +168,7 @@ router.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
 });
 
-// @route   GET /api/auth/user
+// @route   GET /auth/user
 // @desc    Get user data
 // @access  Private
 router.get('/user', protect, async (req, res) => {
@@ -188,7 +188,7 @@ router.get('/user', protect, async (req, res) => {
     }
 });
 
-// @route   PUT /api/auth/profile
+// @route   PUT /auth/profile
 // @desc    Update user profile
 // @access  Private
 router.put('/profile', protect, [
@@ -257,7 +257,7 @@ router.put('/profile', protect, [
     }
 });
 
-// @route   PUT /api/auth/password
+// @route   PUT /auth/password
 // @desc    Update user password
 // @access  Private
 router.put('/password', protect, [

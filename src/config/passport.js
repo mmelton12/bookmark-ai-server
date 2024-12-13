@@ -8,7 +8,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: 'https://api.mattymeltz.com/auth/google/callback',
+            callbackURL: 'https://api.mattymeltz.com/auth/google/callback/flowName=GeneralOAuthFlow',
             proxy: true
         },
         async (accessToken, refreshToken, profile, done) => {
