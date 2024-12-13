@@ -39,23 +39,44 @@ const corsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400 // 24 hours
 };
 
+// Apply middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Initialize passport
 app.use(passport.initialize());
 
-// Debug middleware
+// Request logging middleware
 app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path} - Origin: ${req.get('origin')}`);
+    console.log('Incoming request:', {
+        method: req.method,
+        path: req.path,
+        origin: req.get('origin'),
+        timestamp: new Date().toISOString()
+    });
     next();
 });
 
-// Mount routes without /api prefix
+// Response time logging middleware
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log('Request completed:', {
+            method: req.method,
+            path: req.path,
+            status: res.statusCode,
+            duration: `${duration}ms`,
+            timestamp: new Date().toISOString()
+        });
+    });
+    next();
+});
+
+// Mount routes
 app.use('/auth', authRoutes);
 app.use('/bookmarks', bookmarkRoutes);
 app.use('/folders', folderRoutes);
@@ -74,7 +95,8 @@ app.use((err, req, res, next) => {
         path: req.path,
         method: req.method,
         body: req.body,
-        query: req.query
+        query: req.query,
+        timestamp: new Date().toISOString()
     });
 
     res.status(err.status || 500).json({
@@ -86,7 +108,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// For Vercel serverless deployment
+// For local development server
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
@@ -103,7 +125,8 @@ process.on('unhandledRejection', (err) => {
     console.error('UNHANDLED REJECTION! 💥 Details:', {
         name: err.name,
         message: err.message,
-        stack: err.stack
+        stack: err.stack,
+        timestamp: new Date().toISOString()
     });
     // In production, we might want to gracefully shutdown instead of exiting
     if (process.env.NODE_ENV === 'production') {

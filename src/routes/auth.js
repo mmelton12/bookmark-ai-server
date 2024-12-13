@@ -13,20 +13,42 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-    passport.authenticate('google', { session: false }),
+    (req, res, next) => {
+        console.log('Received Google callback:', {
+            query: req.query,
+            timestamp: new Date().toISOString()
+        });
+        next();
+    },
+    passport.authenticate('google', { 
+        session: false,
+        failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed` 
+    }),
     async (req, res) => {
         try {
-            // Token is now generated in passport strategy
-            const token = req.user.token;
+            console.log('Processing authenticated user:', {
+                id: req.user?._id,
+                timestamp: new Date().toISOString()
+            });
+
+            // Token should be generated in passport strategy
+            const token = req.user?.token;
             
             if (!token) {
-                throw new Error('Authentication failed - no token generated');
+                console.error('No token generated for user');
+                return res.redirect(`${process.env.CLIENT_URL}/login?error=no_token`);
             }
 
             // Redirect to frontend with token
-            res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+            const redirectUrl = `${process.env.CLIENT_URL}/auth/callback?token=${token}`;
+            console.log('Redirecting to:', redirectUrl);
+            return res.redirect(redirectUrl);
         } catch (error) {
-            console.error('Error in Google callback:', error);
+            console.error('Error in Google callback:', {
+                error: error.message,
+                stack: error.stack,
+                timestamp: new Date().toISOString()
+            });
             res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
         }
     }

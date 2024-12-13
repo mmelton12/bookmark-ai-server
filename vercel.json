@@ -53,5 +53,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "src/index.js": {
+      "maxDuration": 60
+    }
+  }
 }
