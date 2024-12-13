@@ -17,20 +17,43 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().catch(err => {
+    console.error('MongoDB connection error:', err);
+});
 
 // Middleware
-app.use(cors({
-    origin: process.env.CLIENT_URL,
+const corsOptions = {
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            process.env.CLIENT_URL,
+            'https://mattymeltz.com',
+            'https://www.mattymeltz.com',
+            'https://client-ogbbdkkkg-samsondigital.vercel.app',
+            'https://client-ashy-five-39.vercel.app'
+        ];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Initialize passport
 app.use(passport.initialize());
+
+// Debug middleware
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - Origin: ${req.get('origin')}`);
+    next();
+});
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -45,10 +68,21 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({
-        message: 'Something went wrong!',
-        error: process.env.NODE_ENV === 'development' ? err.message : {}
+    console.error('Error details:', {
+        message: err.message,
+        stack: err.stack,
+        path: req.path,
+        method: req.method,
+        body: req.body,
+        query: req.query
+    });
+
+    res.status(err.status || 500).json({
+        message: err.message || 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? {
+            stack: err.stack,
+            details: err
+        } : {}
     });
 });
 
@@ -57,16 +91,26 @@ if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
-        console.log(`Server URL: ${process.env.SERVER_URL}`);
-        console.log(`Client URL: ${process.env.CLIENT_URL}`);
+        console.log('Environment:', process.env.NODE_ENV);
+        console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
+        console.log('JWT Secret:', process.env.JWT_SECRET ? 'Set' : 'Not set');
+        console.log('Google OAuth:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
     });
 }
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log(err.name, err.message);
-    process.exit(1);
+    console.error('UNHANDLED REJECTION! 💥 Details:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
+    });
+    // In production, we might want to gracefully shutdown instead of exiting
+    if (process.env.NODE_ENV === 'production') {
+        console.error('Production environment - continuing despite error');
+    } else {
+        process.exit(1);
+    }
 });
 
 module.exports = app;

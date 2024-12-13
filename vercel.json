@@ -3,36 +3,16 @@
   "builds": [
     {
       "src": "src/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs18.x"
+      }
     }
   ],
-  "routes": [
-    {
-      "src": "/api/auth/google/callback",
-      "dest": "src/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://client-ashy-five-39.vercel.app",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Methods": "GET,OPTIONS,POST,PUT,DELETE",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
-      }
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "src/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://client-ashy-five-39.vercel.app",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Methods": "GET,OPTIONS,POST,PUT,DELETE",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "src/index.js"
+  "rewrites": [
+    { 
+      "source": "/(.*)", 
+      "destination": "src/index.js" 
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
