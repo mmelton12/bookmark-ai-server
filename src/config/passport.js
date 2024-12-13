@@ -3,12 +3,14 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
+const SERVER_URL = process.env.SERVER_URL || 'https://api.mattymeltz.com';
+
 passport.use(
     new GoogleStrategy(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: 'https://api.mattymeltz.com/auth/google/callback',
+            callbackURL: `${SERVER_URL}/auth/google/callback`,
             proxy: true
         },
         async (accessToken, refreshToken, profile, done) => {
