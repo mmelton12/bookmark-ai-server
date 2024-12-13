@@ -29,6 +29,7 @@
     "openai": "^3.3.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "string-similarity": "^4.0.4",
     "youtube-transcript": "^1.0.6"
   },
   "devDependencies": {
