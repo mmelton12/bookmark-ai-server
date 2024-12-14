@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
+const session = require('express-session');
 const connectDB = require('./config/database');
 
 // Import passport config
@@ -47,7 +48,21 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session configuration for OAuth
+app.use(session({
+    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
 app.use(passport.initialize());
+app.use(passport.session());
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -117,6 +132,7 @@ if (process.env.NODE_ENV !== 'production') {
         console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
         console.log('JWT Secret:', process.env.JWT_SECRET ? 'Set' : 'Not set');
         console.log('Google OAuth:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
+        console.log('Session Secret:', process.env.SESSION_SECRET ? 'Set' : 'Using JWT Secret');
     });
 }
 
