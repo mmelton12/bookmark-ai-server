@@ -18,7 +18,14 @@ const connectDB = async () => {
             connectTimeoutMS: 10000,
             // Ensure we don't keep retrying in serverless environment
             retryWrites: false,
-            retryReads: false
+            retryReads: false,
+            // Add explicit TLS options
+            tls: true,
+            tlsInsecure: false, // Ensure proper certificate validation
+            ssl: true,
+            sslValidate: true,
+            // Force TLS 1.2 or higher
+            minTlsVersion: 'TLSv1.2'
         };
 
         console.log('Initiating MongoDB connection...');

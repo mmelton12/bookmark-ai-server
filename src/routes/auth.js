@@ -2,52 +2,19 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { passport, generateCodeVerifier, generateCodeChallenge, codeVerifiers } = require('../config/passport');
+const { passport } = require('../config/passport');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const router = express.Router();
 
-// Google OAuth Routes with PKCE
+// Simplified Google OAuth Routes
 router.get('/google',
-    (req, res, next) => {
-        // Generate and store PKCE verifier
-        const codeVerifier = generateCodeVerifier();
-        const codeChallenge = generateCodeChallenge(codeVerifier);
-        
-        // Store verifier in session or temporary storage
-        req.session = req.session || {};
-        req.session.codeVerifier = codeVerifier;
-        
-        // Generate and store state parameter
-        const state = Math.random().toString(36).substring(7);
-        req.session.oauth2state = state;
-        
-        // Add PKCE and state parameters to authentication request
-        const authenticateConfig = {
-            scope: ['profile', 'email'],
-            state: state,
-            code_challenge: codeChallenge,
-            code_challenge_method: 'S256'
-        };
-        
-        passport.authenticate('google', authenticateConfig)(req, res, next);
-    }
+    passport.authenticate('google', {
+        scope: ['profile', 'email']
+    })
 );
 
 router.get('/google/callback',
-    (req, res, next) => {
-        console.log('Received Google callback:', {
-            query: req.query,
-            timestamp: new Date().toISOString()
-        });
-
-        // Verify state parameter
-        if (!req.query.state || req.query.state !== req.session?.oauth2state) {
-            return res.redirect(`${process.env.CLIENT_URL}/login?error=invalid_state`);
-        }
-
-        next();
-    },
     passport.authenticate('google', { 
         session: false,
         failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed` 
@@ -65,12 +32,6 @@ router.get('/google/callback',
             if (!token) {
                 console.error('No token generated for user');
                 return res.redirect(`${process.env.CLIENT_URL}/login?error=no_token`);
-            }
-
-            // Clean up session data
-            if (req.session) {
-                delete req.session.codeVerifier;
-                delete req.session.oauth2state;
             }
 
             // Redirect to frontend with token
